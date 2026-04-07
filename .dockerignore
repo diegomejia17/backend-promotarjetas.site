@@ -1,0 +1,8 @@
+.env
+.git
+.gitignore
+*.md
+json example/
+peticions example/
+docker-compose.yml
+.dockerignore

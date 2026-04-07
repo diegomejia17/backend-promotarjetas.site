@@ -1,0 +1,20 @@
+# Build
+bin/
+*.exe
+*.test
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Environment variables
+.env
+local.env
+
+# Docker
+.docker_data/
+redis_data/
+
+# OS
+.DS_Store
+Thumbs.db

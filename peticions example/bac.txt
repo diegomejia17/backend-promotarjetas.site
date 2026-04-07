@@ -1,0 +1,21 @@
+curl --request POST \
+  --url https://api.mipromo.com/api/finaluser/deals/find \
+  --compressed \
+  --header 'accept: application/json, text/plain, */*' \
+  --header 'accept-encoding: gzip, deflate, br, zstd' \
+  --header 'accept-language: es-SV' \
+  --header 'connection: keep-alive' \
+  --header 'content-length: 116' \
+  --header 'content-type: application/x-www-form-urlencoded; charset=UTF-8' \
+  --header 'country-id: 60' \
+  --header 'host: api.mipromo.com' \
+  --header 'locale: es' \
+  --header 'origin: https://mipromo.com' \
+  --header 'referer: https://mipromo.com/' \
+  --header 'sec-fetch-dest: empty' \
+  --header 'sec-fetch-mode: cors' \
+  --header 'sec-fetch-site: same-site' \
+  --header 'sec-gpc: 1' \
+  --header 'te: trailers' \
+  --header 'user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:149.0) Gecko/20100101 Firefox/149.0' \
+  --data data=%7B%22filters%22%3A%5B%5D%2C%22sorters%22%3A%5B%5D%2C%22pagers%22%3A%7B%22start%22%3A0%2C%22limit%22%3A18%7D%7D
