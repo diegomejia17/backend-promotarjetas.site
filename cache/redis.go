@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strings"
 	"time"
 
 	"promotarjetas-backend/models"
@@ -15,13 +16,25 @@ var Rdb *redis.Client
 var ctx = context.Background()
 
 func InitRedis(redisURL string, password string) {
-	Rdb = redis.NewClient(&redis.Options{
-		Addr:     redisURL,
-		Password: password,
-		DB:       0,
-	})
+	var options *redis.Options
+	var err error
 
-	_, err := Rdb.Ping(ctx).Result()
+	if strings.HasPrefix(redisURL, "redis://") {
+		options, err = redis.ParseURL(redisURL)
+		if err != nil {
+			log.Fatalf("Error parseando REDIS_URL: %v", err)
+		}
+	} else {
+		options = &redis.Options{
+			Addr:     redisURL,
+			Password: password,
+			DB:       0,
+		}
+	}
+
+	Rdb = redis.NewClient(options)
+
+	_, err = Rdb.Ping(ctx).Result()
 	if err != nil {
 		log.Fatalf("Could not connect to Redis: %v", err)
 	}
