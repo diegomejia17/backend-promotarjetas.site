@@ -117,7 +117,7 @@ func FetchBAC() ([]models.PromocionUnificada, error) {
 				FechaInicio:         doc.ValidityFrom,
 				FechaFin:            doc.ValidityTo,
 				PorcentajeDescuento: doc.DiscountPercentValue,
-				UrlExterna:          "https://mipromo.com/sv/deal/" + doc.id ,
+				UrlExterna:          "https://mipromo.com/sv/deal/" + doc.Id ,
 			})
 		}
 		start += limit
