@@ -1,2 +1,0 @@
-curl --request GET \
-  --url 'https://www.bancoagricola.com/com/promociones/promociones_get?segmento=principal'
