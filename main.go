@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"promotarjetas-backend/cache"
 	"promotarjetas-backend/config"
@@ -29,7 +30,17 @@ func main() {
 	c.Start()
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	
+	// Configurar CORS de manera segura para producción
+	corsConfig := cors.DefaultConfig()
+	// En lugar de AllowAll, puedes restringir a tus dominios específicos:
+	// corsConfig.AllowOrigins = []string{"https://tu-dominio.com", "http://localhost:4200"}
+	corsConfig.AllowAllOrigins = true // Cambiar a false y usar AllowOrigins en producción real
+	r.Use(cors.New(corsConfig))
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 
 	api := r.Group("/api")
 	{

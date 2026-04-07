@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"promotarjetas-backend/models"
 	"promotarjetas-backend/utils"
+	"time"
 )
 
 type AgricolaResponse struct {
@@ -24,7 +25,10 @@ type AgricolaPromo struct {
 
 func FetchAgricola() ([]models.PromocionUnificada, error) {
 	url := "https://www.bancoagricola.com/com/promociones/promociones_get?segmento=principal"
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}

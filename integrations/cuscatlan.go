@@ -92,7 +92,9 @@ func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
 		req.Header.Set("apikey", apiKey)
 	}
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 20 * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

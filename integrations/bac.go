@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"promotarjetas-backend/models"
 	"promotarjetas-backend/utils"
+	"time"
 )
 
 type BacRequest struct {
@@ -73,7 +74,9 @@ func FetchBAC() ([]models.PromocionUnificada, error) {
 		req.Header.Set("country-id", "60")
 		req.Header.Set("locale", "es")
 
-		client := &http.Client{}
+		client := &http.Client{
+			Timeout: 15 * time.Second,
+		}
 		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
