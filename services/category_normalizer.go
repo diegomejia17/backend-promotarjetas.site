@@ -16,6 +16,7 @@ const (
 	CatSuperMercados   UnifiedCategory = "Supermercados"
 	CatRestaurantes    UnifiedCategory = "Restaurantes"
 	CatViajes          UnifiedCategory = "Viajes"
+	CatOtros           UnifiedCategory = "Otros"
 )
 
 func UnifyCategories(promotions []models.PromocionUnificada) []models.PromocionUnificada {
@@ -59,5 +60,5 @@ func GetUnifiedCategory(p *models.PromocionUnificada) string {
 	}
 
 	// Default for everything else
-	return string(CatCompras)
+	return string(CatOtros)
 }
