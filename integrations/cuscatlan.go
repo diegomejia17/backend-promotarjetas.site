@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	neturl "net/url"
+
 	"promotarjetas-backend/models"
 	"promotarjetas-backend/utils"
 	"time"
@@ -20,7 +22,26 @@ type CuscatlanResponse struct {
 		Promocions struct {
 			Data []CuscatlanDoc `json:"data"`
 		} `json:"promocions"`
+		Coupons struct {
+			Data []CuscatlanCoupon `json:"data"`
+		} `json:"coupons"`
 	} `json:"data"`
+}
+
+type CuscatlanCoupon struct {
+	Id         string `json:"id"`
+	Attributes struct {
+		Title       string `json:"title"`
+		PublishedAt string `json:"publishedAt"`
+		TermsCond   string `json:"terms_cond"`
+		Imagen      struct {
+			Data struct {
+				Attributes struct {
+					Url string `json:"url"`
+				} `json:"attributes"`
+			} `json:"data"`
+		} `json:"imagen"`
+	} `json:"attributes"`
 }
 
 type CuscatlanDoc struct {
@@ -70,12 +91,13 @@ type CuscatlanDoc struct {
 }
 
 func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
-	url := "https://apigw.bancocuscatlan.com/webapi/"
+	apiURL := "https://apigw.bancocuscatlan.com/webapi/"
+
 
 	currentDate := time.Now().Format("2006-01-02")
 
-	// Expandimos la query para traer h1_title, detail_promotion con text_on_modal usando la fecha actual
-	queryStr := fmt.Sprintf(`query Promociones { promocions (pagination:{limit:100} sort:"priority" filters: {or:[{hide:{eq: null}} {hide:{eq: false}}] and:[{date_start:{lte:"%s"} date_end:{gte:"%s"}}] business:{id:{not:null}}}) { data{ id attributes { h1_title tags{data{attributes{description}}} business {data{attributes{name description logo{data{attributes{url}}}}}} card { title description imagen {data{attributes{url}}}} detail_promotion{title subtitle list_bullets{text} action{text_on_modal}} date_start date_end priority open_graph{og_title og_description og_image{data{attributes{url}}}}  }}}}`, currentDate, currentDate)
+	// Expandimos la query para traer h1_title, detail_promotion con text_on_modal usando la fecha actual y también los cupones
+	queryStr := fmt.Sprintf(`query PromocionesYCupones { promocions (pagination:{limit:100} sort:"priority" filters: {or:[{hide:{eq: null}} {hide:{eq: false}}] and:[{date_start:{lte:"%s"} date_end:{gte:"%s"}}] business:{id:{not:null}}}) { data{ id attributes { h1_title tags{data{attributes{description}}} business {data{attributes{name description logo{data{attributes{url}}}}}} card { title description imagen {data{attributes{url}}}} detail_promotion{title subtitle list_bullets{text} action{text_on_modal}} date_start date_end priority open_graph{og_title og_description og_image{data{attributes{url}}}}  }}} coupons(pagination:{limit:100} sort:"priority"){data{id attributes{title publishedAt priority terms_cond imagen{data{attributes{url}}}}}} }`, currentDate, currentDate)
 
 	reqBody := CuscatlanRequest{Query: queryStr}
 	jsonBody, err := json.Marshal(reqBody)
@@ -83,7 +105,8 @@ func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +181,26 @@ func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
 			FechaInicio:       doc.Attributes.DateStart,
 			FechaFin:          doc.Attributes.DateEnd,
 			RestriccionesHtml: restricciones,
+			UrlExterna:        fmt.Sprintf("https://www.bancocuscatlan.com/tarjetas/promociones/promocion/%s/%s", neturl.PathEscape(utils.CleanText(doc.Attributes.Business.Data.Attributes.Name)), doc.Id),
 		})
 	}
+
+	for _, cup := range data.Data.Coupons.Data {
+		resBrief := utils.StripTags(cup.Attributes.TermsCond)
+		
+		unificadas = append(unificadas, models.PromocionUnificada{
+			ID:                cup.Id,
+			BancoOrigen:       "CUSCATLAN",
+			Titulo:            utils.CleanText(cup.Attributes.Title),
+			DescripcionBreve:  utils.CleanText(resBrief),
+			UrlImagen:         cup.Attributes.Imagen.Data.Attributes.Url,
+			NombreComercio:    cup.Attributes.Title, 
+			Categoria:         "Cupones",
+			FechaInicio:       cup.Attributes.PublishedAt,
+			FechaFin:          "",
+			RestriccionesHtml: cup.Attributes.TermsCond,
+		})
+	}
+
 	return unificadas, nil
 }

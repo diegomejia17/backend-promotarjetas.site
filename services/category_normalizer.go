@@ -1,8 +1,8 @@
 package services
 
 import (
-	"strings"
 	"promotarjetas-backend/models"
+	"strings"
 )
 
 type UnifiedCategory string
@@ -16,6 +16,7 @@ const (
 	CatSuperMercados   UnifiedCategory = "Supermercados"
 	CatRestaurantes    UnifiedCategory = "Restaurantes"
 	CatViajes          UnifiedCategory = "Viajes"
+	CatOtros           UnifiedCategory = "Otros"
 )
 
 func UnifyCategories(promotions []models.PromocionUnificada) []models.PromocionUnificada {
@@ -32,7 +33,7 @@ type categoryMapping struct {
 }
 
 var mappings = []categoryMapping{
-	{CatRestaurantes, []string{"restaurante", "café", "gastronom", "pizza", "hamburguesa", "comida", "sushi", "bistro", "bar", "cocina", "dining", "steak"}},
+	{CatRestaurantes, []string{"restaurante", "café", "gastronom", "pizza", "hamburguesa", "comida", "sushi", "bistro", "cocina", "dining", "steak"}},
 	{CatViajes, []string{"hotel", "vuelo", "viaje", "vacación", "turismo", "airline", "aerolínea", "boletos", "travel", "playa", "resort"}},
 	{CatEntretenimiento, []string{"cine", "película", "teatro", "concierto", "diversión", "entretenimiento", "cinépolis", "museo", "parque"}},
 	{CatSalud, []string{"salud", "médico", "clínica", "farmacia", "belleza", "spa", "salón", "dental", "laboratorio", "óptica", "health", "bienestar", "hospital"}},
@@ -59,5 +60,5 @@ func GetUnifiedCategory(p *models.PromocionUnificada) string {
 	}
 
 	// Default for everything else
-	return string(CatCompras)
+	return string(CatOtros)
 }

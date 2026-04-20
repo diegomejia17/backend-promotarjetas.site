@@ -55,6 +55,7 @@ type BacImage struct {
 }
 
 func FetchBAC() ([]models.PromocionUnificada, error) {
+	seen := make(map[string]bool)
 	url := "https://api.mipromo.com/api/finaluser/deals/find"
 
 	limit := 18
@@ -105,6 +106,8 @@ func FetchBAC() ([]models.PromocionUnificada, error) {
 				urlImg = baseUrl + img.ImageFilepath + "/" + img.ImageFilename + queryParams
 			}
 
+			if !seen[doc.Id] {
+			seen[doc.Id] = true
 			unificadas = append(unificadas, models.PromocionUnificada{
 				ID:                  doc.Id,
 				BancoOrigen:         "BAC",
@@ -119,6 +122,8 @@ func FetchBAC() ([]models.PromocionUnificada, error) {
 				PorcentajeDescuento: doc.DiscountPercentValue,
 				UrlExterna:          "https://mipromo.com/sv/deal/" + doc.Id ,
 			})
+		}
+
 		}
 		start += limit
 	}
