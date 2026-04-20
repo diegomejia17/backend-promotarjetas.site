@@ -60,3 +60,17 @@ func GetPromotionsRaw() ([]byte, error) {
 
 	return val, nil
 }
+
+func GetPromotionsList() ([]models.PromocionUnificada, error) {
+	raw, err := GetPromotionsRaw()
+	if err != nil || raw == nil {
+		return nil, err
+	}
+
+	var promotions []models.PromocionUnificada
+	if err := json.Unmarshal(raw, &promotions); err != nil {
+		return nil, err
+	}
+
+	return promotions, nil
+}

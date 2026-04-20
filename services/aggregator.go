@@ -9,6 +9,7 @@ import (
 	"promotarjetas-backend/integrations"
 	"promotarjetas-backend/models"
 	"sort"
+	"time"
 )
 
 var (
@@ -89,27 +90,33 @@ func SyncPromotions(cfg config.Config) {
 
 	wg.Wait()
 	
+	// Cargar promociones existentes para preservar su fecha de creación
+	existingPromos, _ := cache.GetPromotionsList()
+	existingDates := make(map[string]int64)
+	for _, p := range existingPromos {
+		existingDates[p.ID] = p.CreatedAt
+	}
+
+	now := time.Now().Unix()
+	for i := range allPromotions {
+		if date, ok := existingDates[allPromotions[i].ID]; ok {
+			allPromotions[i].CreatedAt = date
+		} else {
+			allPromotions[i].CreatedAt = now
+		}
+	}
+	
 	// 1. Unificar categorías
 	allPromotions = UnifyCategories(allPromotions)
 
-	// 2. Ordenar promociones por categoría según la prioridad del diseño
+	// 2. Ordenar de forma global: las más recientes primero
 	sort.Slice(allPromotions, func(i, j int) bool {
-		p1, ok1 := categoryPriority[allPromotions[i].Categoria]
-		p2, ok2 := categoryPriority[allPromotions[j].Categoria]
-
-		// Si una categoría no está en nuestro mapa, se envía al final
-		if !ok1 {
-			p1 = 99
-		}
-		if !ok2 {
-			p2 = 99
+		// Prioridad 1: Fecha de creación (más reciente primero)
+		if allPromotions[i].CreatedAt != allPromotions[j].CreatedAt {
+			return allPromotions[i].CreatedAt > allPromotions[j].CreatedAt
 		}
 
-		if p1 != p2 {
-			return p1 < p2
-		}
-
-		// En caso de empate por categoría, ordenar por título para consistencia
+		// Prioridad 2: Título (orden alfabético para consistencia)
 		return allPromotions[i].Titulo < allPromotions[j].Titulo
 	})
 	

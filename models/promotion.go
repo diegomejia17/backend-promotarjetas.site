@@ -13,4 +13,5 @@ type PromocionUnificada struct {
 	FechaFin            string  `json:"fechaFin,omitempty"`
 	PorcentajeDescuento float64 `json:"porcentajeDescuento,omitempty"`
 	UrlExterna          string  `json:"urlExterna,omitempty"`
+	CreatedAt           int64   `json:"createdAt"`
 }
