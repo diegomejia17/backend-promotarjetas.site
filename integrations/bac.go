@@ -107,22 +107,22 @@ func FetchBAC() ([]models.PromocionUnificada, error) {
 			}
 
 			if !seen[doc.Id] {
-			seen[doc.Id] = true
-			unificadas = append(unificadas, models.PromocionUnificada{
-				ID:                  doc.Id,
-				BancoOrigen:         "BAC",
-				Titulo:              utils.CleanText(doc.Title),
-				DescripcionBreve:    utils.StripTags(doc.Description),
-				UrlImagen:           urlImg,
-				NombreComercio:      doc.MerchantName,
-				RestriccionesHtml:   utils.DecodeHtml(doc.Description + "<br/>" + doc.Restrictions),
-				Categoria:           doc.CategoryTranslation,
-				FechaInicio:         doc.ValidityFrom,
-				FechaFin:            doc.ValidityTo,
-				PorcentajeDescuento: doc.DiscountPercentValue,
-				UrlExterna:          "https://mipromo.com/sv/deal/" + doc.Id ,
-			})
-		}
+				seen[doc.Id] = true
+				unificadas = append(unificadas, models.PromocionUnificada{
+					ID:                  doc.Id,
+					BancoOrigen:         "BAC",
+					Titulo:              utils.CleanText(doc.Title),
+					DescripcionBreve:    utils.StripTags(doc.Description),
+					UrlImagen:           urlImg,
+					NombreComercio:      doc.MerchantName,
+					RestriccionesHtml:   utils.DecodeHtml(doc.Description + "<br/>" + doc.Restrictions),
+					Categoria:           doc.CategoryTranslation,
+					FechaInicio:         doc.ValidityFrom,
+					FechaFin:            doc.ValidityTo,
+					PorcentajeDescuento: doc.DiscountPercentValue,
+					UrlExterna:          "https://mipromo.com/sv/deal/" + doc.Id,
+				})
+			}
 
 		}
 		start += limit
