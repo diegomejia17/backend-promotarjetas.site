@@ -1,15 +1,16 @@
 package services
 
 import (
+	"context"
 	"log"
+	"sort"
 	"sync"
-	
+	"time"
+
 	"promotarjetas-backend/cache"
 	"promotarjetas-backend/config"
 	"promotarjetas-backend/integrations"
 	"promotarjetas-backend/models"
-	"sort"
-	"time"
 )
 
 var (
@@ -29,7 +30,7 @@ var categoryPriority = map[string]int{
 	"Entretenimiento": 8,
 }
 
-func SyncPromotions(cfg config.Config) {
+func SyncPromotions(ctx context.Context, cfg config.Config) {
 	syncMutex.Lock()
 	if isSyncing {
 		syncMutex.Unlock()
@@ -54,7 +55,7 @@ func SyncPromotions(cfg config.Config) {
 
 	go func() {
 		defer wg.Done()
-		data, err := integrations.FetchAgricola()
+		data, err := integrations.FetchAgricola(ctx)
 		if err != nil {
 			log.Printf("Error fetching Agricola: %v\n", err)
 			return
@@ -66,7 +67,7 @@ func SyncPromotions(cfg config.Config) {
 
 	go func() {
 		defer wg.Done()
-		data, err := integrations.FetchBAC()
+		data, err := integrations.FetchBAC(ctx)
 		if err != nil {
 			log.Printf("Error fetching BAC: %v\n", err)
 			return
@@ -78,7 +79,7 @@ func SyncPromotions(cfg config.Config) {
 
 	go func() {
 		defer wg.Done()
-		data, err := integrations.FetchCuscatlan(cfg.CuscatlanAPIKey)
+		data, err := integrations.FetchCuscatlan(ctx, cfg.CuscatlanAPIKey)
 		if err != nil {
 			log.Printf("Error fetching Cuscatlan: %v\n", err)
 			return
@@ -89,9 +90,9 @@ func SyncPromotions(cfg config.Config) {
 	}()
 
 	wg.Wait()
-	
+
 	// Cargar promociones existentes para preservar su fecha de creación
-	existingPromos, _ := cache.GetPromotionsList()
+	existingPromos, _ := cache.GetPromotionsList(ctx)
 	existingDates := make(map[string]int64)
 	for _, p := range existingPromos {
 		existingDates[p.ID] = p.CreatedAt
@@ -105,7 +106,7 @@ func SyncPromotions(cfg config.Config) {
 			allPromotions[i].CreatedAt = now
 		}
 	}
-	
+
 	// 1. Unificar categorías
 	allPromotions = UnifyCategories(allPromotions)
 
@@ -119,11 +120,11 @@ func SyncPromotions(cfg config.Config) {
 		// Prioridad 2: Título (orden alfabético para consistencia)
 		return allPromotions[i].Titulo < allPromotions[j].Titulo
 	})
-	
+
 	log.Printf("Sincronizacion completada. Total agregadas: %d\n", len(allPromotions))
-	
+
 	if len(allPromotions) > 0 {
-		err := cache.SavePromotions(allPromotions)
+		err := cache.SavePromotions(ctx, allPromotions)
 		if err != nil {
 			log.Printf("Error guardando en Redis: %v\n", err)
 		} else {

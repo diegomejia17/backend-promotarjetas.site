@@ -1,5 +1,6 @@
 # Build
 bin/
+tmp/
 *.exe
 *.test
 

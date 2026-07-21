@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"promotarjetas-backend/cache"
@@ -28,25 +29,25 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 
-	cache.InitRedis(cfg.RedisURL, cfg.RedisPassword)
+	if err := cache.InitRedis(cfg.RedisURL, cfg.RedisPassword); err != nil {
+		log.Printf("Advertencia: No se pudo conectar a Redis durante el inicio: %v. El servicio continuará intentándolo al recibir peticiones.\n", err)
+	}
 
-	go services.SyncPromotions(cfg)
+	go services.SyncPromotions(context.Background(), cfg)
 
 	c := cron.New()
 	// Run every day at midnight
 	c.AddFunc("0 0 * * *", func() {
-		log.Println("Ejecutando cron diario para sicronizar promociones")
-		services.SyncPromotions(cfg)
+		log.Println("Ejecutando cron diario para sincronizar promociones")
+		services.SyncPromotions(context.Background(), cfg)
 	})
 	c.Start()
 
 	r := gin.Default()
-	
+
 	// Configurar CORS de manera segura para producción
 	corsConfig := cors.DefaultConfig()
-	// En lugar de AllowAll, puedes restringir a tus dominios específicos:
-	// corsConfig.AllowOrigins = []string{"https://tu-dominio.com", "http://localhost:4200"}
-	corsConfig.AllowAllOrigins = true // Cambiar a false y usar AllowOrigins en producción real
+	corsConfig.AllowAllOrigins = true
 	r.Use(cors.New(corsConfig))
 
 	r.GET("/health", controllers.HealthCheck)

@@ -2,15 +2,24 @@ package integrations
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	neturl "net/url"
+	"strings"
+	"time"
 
 	"promotarjetas-backend/models"
 	"promotarjetas-backend/utils"
-	"time"
+)
+
+var CuscatlanAPIURL = "https://apigw.bancocuscatlan.com/webapi/"
+
+const (
+	cuscatlanBaseURL = "https://www.bancocuscatlan.com/tarjetas/promociones/promocion"
+	cuscatlanBank    = "CUSCATLAN"
 )
 
 type CuscatlanRequest struct {
@@ -50,8 +59,8 @@ type CuscatlanDoc struct {
 		PublishedAt string `json:"publishedAt"`
 		H1Title     string `json:"h1_title"`
 		DateStart   string `json:"date_start"`
-		DateEnd   string `json:"date_end"`
-		Business  struct {
+		DateEnd     string `json:"date_end"`
+		Business    struct {
 			Data struct {
 				Attributes struct {
 					Name        string `json:"name"`
@@ -90,25 +99,17 @@ type CuscatlanDoc struct {
 	} `json:"attributes"`
 }
 
-func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
-	apiURL := "https://apigw.bancocuscatlan.com/webapi/"
-
-
+func FetchCuscatlan(ctx context.Context, apiKey string) ([]models.PromocionUnificada, error) {
 	currentDate := time.Now().Format("2006-01-02")
-
-	// Expandimos la query para traer h1_title, detail_promotion con text_on_modal usando la fecha actual y también los cupones
-	queryStr := fmt.Sprintf(`query PromocionesYCupones { promocions (pagination:{limit:100} sort:"priority" filters: {or:[{hide:{eq: null}} {hide:{eq: false}}] and:[{date_start:{lte:"%s"} date_end:{gte:"%s"}}] business:{id:{not:null}}}) { data{ id attributes { h1_title tags{data{attributes{description}}} business {data{attributes{name description logo{data{attributes{url}}}}}} card { title description imagen {data{attributes{url}}}} detail_promotion{title subtitle list_bullets{text} action{text_on_modal}} date_start date_end priority open_graph{og_title og_description og_image{data{attributes{url}}}}  }}} coupons(pagination:{limit:100} sort:"priority"){data{id attributes{title publishedAt priority terms_cond imagen{data{attributes{url}}}}}} }`, currentDate, currentDate)
-
-	reqBody := CuscatlanRequest{Query: queryStr}
+	reqBody := CuscatlanRequest{Query: cuscatlanQuery(currentDate)}
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshal Cuscatlan request: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
-
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, CuscatlanAPIURL, bytes.NewReader(jsonBody))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create Cuscatlan request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if apiKey != "" {
@@ -120,87 +121,107 @@ func FetchCuscatlan(apiKey string) ([]models.PromocionUnificada, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request Cuscatlan promotions: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read Cuscatlan response: %w", err)
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("Cuscatlan API returned %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
 	var data CuscatlanResponse
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode Cuscatlan response: %w", err)
 	}
 
-	var unificadas []models.PromocionUnificada
+	unificadas := make([]models.PromocionUnificada, 0, len(data.Data.Promocions.Data)+len(data.Data.Coupons.Data))
 	for _, doc := range data.Data.Promocions.Data {
-		categoria := ""
-		if len(doc.Attributes.Tags.Data) > 0 {
-			categoria = doc.Attributes.Tags.Data[0].Attributes.Description
-		}
-
-		restricciones := ""
-		dp := doc.Attributes.DetailPromotion
-		if dp.Title != "" || dp.Subtitle != "" || len(dp.ListBullets) > 0 {
-			restricciones = fmt.Sprintf("<h3>%s</h3><h4>%s</h4><ul>", dp.Title, dp.Subtitle)
-			for _, bullet := range dp.ListBullets {
-				restricciones += fmt.Sprintf("<li>%s</li>", bullet.Text)
-			}
-			restricciones += "</ul>"
-		}
-
-		if dp.Action.TextOnModal != "" {
-			restricciones += fmt.Sprintf("<div class='modal-text'>%s</div>", dp.Action.TextOnModal)
-		}
-
-		if doc.Attributes.Business.Data.Attributes.Description != "" {
-			restricciones = fmt.Sprintf("<p><strong>Sobre el comercio:</strong> %s</p>%s", 
-				doc.Attributes.Business.Data.Attributes.Description, restricciones)
-		}
-
-		titulo := doc.Attributes.H1Title
-		if titulo == "" {
-			titulo = doc.Attributes.Card.Title
-		}
-
-		resBrief := utils.StripTags(doc.Attributes.DetailPromotion.Action.TextOnModal)
-		if resBrief == "" {
-			resBrief = doc.Attributes.Card.Description
-		}
-
-		unificadas = append(unificadas, models.PromocionUnificada{
-			ID:                doc.Id,
-			BancoOrigen:       "CUSCATLAN",
-			Titulo:            utils.CleanText(titulo),
-			DescripcionBreve:  utils.CleanText(resBrief),
-			UrlImagen:         doc.Attributes.Card.Imagen.Data.Attributes.Url,
-			NombreComercio:    doc.Attributes.Business.Data.Attributes.Name,
-			Categoria:         categoria,
-			FechaInicio:       doc.Attributes.DateStart,
-			FechaFin:          doc.Attributes.DateEnd,
-			RestriccionesHtml: restricciones,
-			UrlExterna:        fmt.Sprintf("https://www.bancocuscatlan.com/tarjetas/promociones/promocion/%s/%s", neturl.PathEscape(utils.CleanText(doc.Attributes.Business.Data.Attributes.Name)), doc.Id),
-		})
+		unificadas = append(unificadas, cuscatlanPromotion(doc))
 	}
 
 	for _, cup := range data.Data.Coupons.Data {
-		resBrief := utils.StripTags(cup.Attributes.TermsCond)
-		
-		unificadas = append(unificadas, models.PromocionUnificada{
-			ID:                cup.Id,
-			BancoOrigen:       "CUSCATLAN",
-			Titulo:            utils.CleanText(cup.Attributes.Title),
-			DescripcionBreve:  utils.CleanText(resBrief),
-			UrlImagen:         cup.Attributes.Imagen.Data.Attributes.Url,
-			NombreComercio:    cup.Attributes.Title, 
-			Categoria:         "Cupones",
-			FechaInicio:       cup.Attributes.PublishedAt,
-			FechaFin:          "",
-			RestriccionesHtml: cup.Attributes.TermsCond,
-		})
+		unificadas = append(unificadas, cuscatlanCoupon(cup))
 	}
 
 	return unificadas, nil
+}
+
+func cuscatlanQuery(currentDate string) string {
+	return fmt.Sprintf(`query PromocionesYCupones { promocions (pagination:{limit:100} sort:"priority" filters: {or:[{hide:{eq: null}} {hide:{eq: false}}] and:[{date_start:{lte:"%s"} date_end:{gte:"%s"}}] business:{id:{not:null}}}) { data{ id attributes { h1_title tags{data{attributes{description}}} business {data{attributes{name description logo{data{attributes{url}}}}}} card { title description imagen {data{attributes{url}}}} detail_promotion{title subtitle list_bullets{text} action{text_on_modal}} date_start date_end priority open_graph{og_title og_description og_image{data{attributes{url}}}}  }}} coupons(pagination:{limit:100} sort:"priority"){data{id attributes{title publishedAt priority terms_cond imagen{data{attributes{url}}}}}} }`, currentDate, currentDate)
+}
+
+func cuscatlanPromotion(doc CuscatlanDoc) models.PromocionUnificada {
+	attributes := doc.Attributes
+	title := attributes.H1Title
+	if title == "" {
+		title = attributes.Card.Title
+	}
+
+	briefDescription := utils.StripTags(attributes.DetailPromotion.Action.TextOnModal)
+	if briefDescription == "" {
+		briefDescription = attributes.Card.Description
+	}
+
+	business := attributes.Business.Data.Attributes
+	return models.PromocionUnificada{
+		ID:                doc.Id,
+		BancoOrigen:       cuscatlanBank,
+		Titulo:            utils.CleanText(title),
+		DescripcionBreve:  utils.CleanText(briefDescription),
+		UrlImagen:         attributes.Card.Imagen.Data.Attributes.Url,
+		NombreComercio:    business.Name,
+		Categoria:         cuscatlanCategory(doc),
+		FechaInicio:       attributes.DateStart,
+		FechaFin:          attributes.DateEnd,
+		RestriccionesHtml: cuscatlanRestrictions(doc),
+		UrlExterna:        fmt.Sprintf("%s/%s/%s", cuscatlanBaseURL, neturl.PathEscape(utils.CleanText(business.Name)), doc.Id),
+	}
+}
+
+func cuscatlanCoupon(coupon CuscatlanCoupon) models.PromocionUnificada {
+	attributes := coupon.Attributes
+	return models.PromocionUnificada{
+		ID:                coupon.Id,
+		BancoOrigen:       cuscatlanBank,
+		Titulo:            utils.CleanText(attributes.Title),
+		DescripcionBreve:  utils.CleanText(utils.StripTags(attributes.TermsCond)),
+		UrlImagen:         attributes.Imagen.Data.Attributes.Url,
+		NombreComercio:    attributes.Title,
+		Categoria:         "Cupones",
+		FechaInicio:       attributes.PublishedAt,
+		RestriccionesHtml: attributes.TermsCond,
+	}
+}
+
+func cuscatlanCategory(doc CuscatlanDoc) string {
+	if len(doc.Attributes.Tags.Data) == 0 {
+		return ""
+	}
+	return doc.Attributes.Tags.Data[0].Attributes.Description
+}
+
+func cuscatlanRestrictions(doc CuscatlanDoc) string {
+	detail := doc.Attributes.DetailPromotion
+	var restrictions strings.Builder
+
+	if detail.Title != "" || detail.Subtitle != "" || len(detail.ListBullets) > 0 {
+		fmt.Fprintf(&restrictions, "<h3>%s</h3><h4>%s</h4><ul>", detail.Title, detail.Subtitle)
+		for _, bullet := range detail.ListBullets {
+			fmt.Fprintf(&restrictions, "<li>%s</li>", bullet.Text)
+		}
+		restrictions.WriteString("</ul>")
+	}
+
+	if detail.Action.TextOnModal != "" {
+		fmt.Fprintf(&restrictions, "<div class='modal-text'>%s</div>", detail.Action.TextOnModal)
+	}
+
+	if description := doc.Attributes.Business.Data.Attributes.Description; description != "" {
+		return fmt.Sprintf("<p><strong>Sobre el comercio:</strong> %s</p>%s", description, restrictions.String())
+	}
+	return restrictions.String()
 }

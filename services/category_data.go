@@ -1,0 +1,373 @@
+package services
+
+type UnifiedCategory string
+
+const (
+	CatHogar           UnifiedCategory = "Hogar"
+	CatEntretenimiento UnifiedCategory = "Entretenimiento"
+	CatTecnologia      UnifiedCategory = "Tecnología"
+	CatSalud           UnifiedCategory = "Salud"
+	CatCompras         UnifiedCategory = "Compras"
+	CatSuperMercados   UnifiedCategory = "Supermercados"
+	CatRestaurantes    UnifiedCategory = "Restaurantes"
+	CatViajes          UnifiedCategory = "Viajes"
+	CatOtros           UnifiedCategory = "Otros"
+)
+
+type categoryMapping struct {
+	category UnifiedCategory
+	keywords []string
+}
+
+var merchantCategoryOverrides = map[string]UnifiedCategory{
+	// Restaurantes
+	"barlleno":             CatRestaurantes,
+	"benihana":             CatRestaurantes,
+	"bennigan´s":           CatRestaurantes,
+	"crepe lovers":         CatRestaurantes,
+	"el bendito":           CatRestaurantes,
+	"go green":             CatRestaurantes,
+	"kip":                  CatRestaurantes,
+	"la burrata":           CatRestaurantes,
+	"la campana":           CatRestaurantes,
+	"la pampa coatepeque":  CatRestaurantes,
+	"la rosa":              CatRestaurantes,
+	"la rueda":             CatRestaurantes,
+	"le croissant":         CatRestaurantes,
+	"les arts culinaires":  CatRestaurantes,
+	"los ranchos":          CatRestaurantes,
+	"octavia":              CatRestaurantes,
+	"olive garden":         CatRestaurantes,
+	"palermo":              CatRestaurantes,
+	"papa johns":           CatRestaurantes,
+	"papa john's":          CatRestaurantes,
+	"papa john´s":          CatRestaurantes,
+	"pizzeria krisppy's":   CatRestaurantes,
+	"pollo real":           CatRestaurantes,
+	"popeyes":              CatRestaurantes,
+	"ribs & bones":         CatRestaurantes,
+	"silvestre":            CatRestaurantes,
+	"donkeys":              CatRestaurantes,
+	"típicos salvadoreños": CatRestaurantes,
+	"tipicos salvadoreños": CatRestaurantes,
+	"soho":                 CatRestaurantes,
+	"the green house":      CatRestaurantes,
+	"tony roma's":          CatRestaurantes,
+	"wings":                CatRestaurantes,
+	"pedidosya":            CatRestaurantes,
+
+	// Compras
+	"adidas":              CatCompras,
+	"aeromall":            CatCompras,
+	"anais":               CatCompras,
+	"anaís":               CatCompras,
+	"calvin klein":        CatCompras,
+	"cheers y la barrica": CatCompras,
+	"colegiaturas":        CatCompras,
+	"colegios apce":       CatCompras,
+	"color moda":          CatCompras,
+	"dana & callena":      CatCompras,
+	"diparvel":            CatCompras,
+	"escuela alemana":     CatCompras,
+	"flexi":               CatCompras,
+	"florely":             CatCompras,
+	"instituto internacional de diseño de modas haute couture": CatCompras,
+	"isadora":         CatCompras,
+	"la cava":         CatCompras,
+	"la ceiba":        CatCompras,
+	"liceo francés":   CatCompras,
+	"liceo frances":   CatCompras,
+	"luho woman":      CatCompras,
+	"montsé":          CatCompras,
+	"montse":          CatCompras,
+	"mumuso":          CatCompras,
+	"bubbas":          CatCompras,
+	"park avenue":     CatCompras,
+	"payless":         CatCompras,
+	"prismamoda":      CatCompras,
+	"qapla":           CatCompras,
+	"roberto cuadra":  CatCompras,
+	"siman.com":       CatCompras,
+	"skechers":        CatCompras,
+	"tienda skechers": CatCompras,
+	"tiendas flexi":   CatCompras,
+	"todomoda":        CatCompras,
+	"totto":           CatCompras,
+	"u.s. polo":       CatCompras,
+	"u.s. polo assn.": CatCompras,
+	"us polo":         CatCompras,
+	"us polo assn":    CatCompras,
+
+	// Salud
+	"bitter":                           CatSalud,
+	"bitter store":                     CatSalud,
+	"clínica dental homberger":         CatSalud,
+	"clinica dental homberger":         CatSalud,
+	"effet parfait":                    CatSalud,
+	"eyebrow design":                   CatSalud,
+	"farmacias san benito":             CatSalud,
+	"farmacias san nicolás":            CatSalud,
+	"farmacias san nicolas":            CatSalud,
+	"farmacias uno":                    CatSalud,
+	"flert":                            CatSalud,
+	"gimnasios y centros de ejercicio": CatSalud,
+	"laboratorio centro ginecológico":  CatSalud,
+	"laboratorio centro ginecologico":  CatSalud,
+	"laboratorio segovia":              CatSalud,
+	"lain":                             CatSalud,
+	"mac cosmetics":                    CatSalud,
+	"odontoplus":                       CatSalud,
+	"óptica nice vision":               CatSalud,
+	"optica nice vision":               CatSalud,
+	"óptica swan":                      CatSalud,
+	"optica swan":                      CatSalud,
+	"optica la joya":                   CatSalud,
+	"opticas devlyn":                   CatSalud,
+	"opticas swan":                     CatSalud,
+	"perfumería magie":                 CatSalud,
+	"perfumeria magie":                 CatSalud,
+	"petland":                          CatSalud,
+	"peterinaria tuscania":             CatSalud,
+	"probelleza":                       CatSalud,
+	"salud digna":                      CatSalud,
+	"sento":                            CatSalud,
+	"tbs beauty supply":                CatSalud,
+	"the body shop":                    CatSalud,
+	"vida nueva spa":                   CatSalud,
+	"vidals":                           CatSalud,
+	"xclaim":                           CatSalud,
+	"bottega verde":                    CatSalud,
+	"bnatural":                         CatSalud,
+	"opticas cv +":                     CatSalud,
+
+	// Viajes
+	"aeroconnections":      CatViajes,
+	"allá arriba":          CatViajes,
+	"alla arriba":          CatViajes,
+	"asistencia muvit":     CatViajes,
+	"cardedeu hotel":       CatViajes,
+	"decameron":            CatViajes,
+	"escamilla":            CatViajes,
+	"kafen hotel":          CatViajes,
+	"multipuntos":          CatViajes,
+	"siberian el salvador": CatViajes,
+	"transexpress":         CatViajes,
+	"trans express":        CatViajes,
+
+	// Entretenimiento
+	"barlleno app": CatEntretenimiento,
+	"cinemark":     CatEntretenimiento,
+	"cinepolis":    CatEntretenimiento,
+	"smart ticket": CatEntretenimiento,
+	"yazz":         CatEntretenimiento,
+
+	// Tecnología
+	"claro":                CatTecnologia,
+	"omnisport":            CatTecnologia,
+	"tupreciosv":           CatTecnologia,
+	"valdez":               CatTecnologia,
+	"valdez, s.a. de c.v.": CatTecnologia,
+
+	// Supermercados
+	"kudu":           CatSuperMercados,
+	"pricesmart":     CatSuperMercados,
+	"price smart":    CatSuperMercados,
+	"súper selectos": CatSuperMercados,
+	"super selectos": CatSuperMercados,
+
+	// Hogar
+	"casa de oro":             CatHogar,
+	"cottono":                 CatHogar,
+	"doffice":                 CatHogar,
+	"epa":                     CatHogar,
+	"ferrocentro":             CatHogar,
+	"hilasal":                 CatHogar,
+	"phenicia":                CatHogar,
+	"rootka gardening design": CatHogar,
+	"muy mucho":               CatHogar,
+
+	// Genéricos / bancos: mejor NO forzar categoría fija
+	"bac":                 CatOtros,
+	"banco cuscatlan":     CatOtros,
+	"actualiza tus datos": CatOtros,
+}
+
+var mappings = []categoryMapping{
+	{
+		CatRestaurantes,
+		[]string{
+			"restaurante", "restaurantes", "restaurant", "comedor", "comida", "food", "menú", "menu",
+			"menú regular", "menu regular", "comida rápida", "comida rapida",
+			"pizza", "pizzeria", "pizzería", "hamburguesa", "burger", "sushi",
+			"café", "cafe", "coffee", "crepe", "crepa", "parrilla", "steak",
+			"pollo", "chicken", "mariscos", "seafood", "bebida", "bebidas",
+			"platos individuales", "sabor auténtico", "sabor autentico",
+			"donkeys", "típicos salvadoreños", "tipicos salvadoreños",
+
+			// Comercios detectados en el JSON
+			"los ranchos",
+			"el bendito",
+			"la pampa",
+			"la pampa coatepeque",
+			"papa johns",
+			"papa john's",
+			"papa john´s",
+			"palermo",
+			"crepe lovers",
+			"popeyes",
+			"la cava",
+			"kudu",
+			"la rosa",
+			"café del cielo",
+			"cafe del cielo",
+		},
+	},
+	{
+		CatViajes,
+		[]string{
+			"hotel", "hoteles", "resort", "hospedaje", "alojamiento", "estadía", "estadia",
+			"vuelo", "vuelos", "aerolínea", "aerolinea", "airline", "avianca",
+			"copa airlines", "copa", "connectmiles", "lifemiles", "millas",
+			"boletos aéreos", "boletos aereos", "pasaje", "viaje", "travel",
+			"turismo", "tour", "playa", "crucero", "aeropuerto", "airport",
+			"vip", "day pass", "entrada vip", "sala vip",
+
+			// Comercios detectados en el JSON
+			"allá arriba",
+			"alla arriba",
+			"aeroconnections",
+			"trans express",
+			"transexpress",
+			"casillero",
+			"envíos",
+			"envios",
+			"libras gratis",
+			"plan prepago anual",
+		},
+	},
+	{
+		CatEntretenimiento,
+		[]string{
+			"cine", "cinema", "película", "pelicula", "movie", "teatro",
+			"concierto", "evento", "eventos", "entretenimiento", "parque",
+			"museo", "entradas", "boletos", "2x1", "streaming", "netflix",
+			"spotify", "disney", "hbo", "max", "prime video",
+
+			// Comercios detectados en el JSON
+			"cinemark",
+			"vive el cine",
+			"entradas al 2x1",
+		},
+	},
+	{
+		CatSalud,
+		[]string{
+			"salud", "health", "médico", "medico", "doctor", "clínica", "clinica", "clínicas", "clinicas",
+			"hospital", "hospitales", "farmacia", "farmacias", "laboratorio", "lab", "dental", "dentista",
+			"odontología", "odontologia", "óptica", "optica", "ópticas", "opticas", "lentes",
+			"aro y lente", "examen visual", "rayos x", "mamografía", "mamografia",
+			"ultrasonido", "densitometría", "densitometria", "papanicolaou",
+			"electrocardiograma", "bienestar", "spa", "masaje", "facial",
+			"belleza", "beauty", "salón", "salon", "manicure", "pedicure",
+			"cejas", "eyebrow", "depilación", "depilacion", "planchado",
+			"gel color", "tratamiento hidratante",
+			"bottega verde", "bnatural", "opticas cv +",
+
+			// Comercios detectados en el JSON
+			"odontoplus",
+			"odontoplus clinic",
+			"effet parfait",
+			"eyebrow design",
+			"nice vision",
+			"óptica nice vision",
+			"optica nice vision",
+			"óptica la joya",
+			"optica la joya",
+			"salud digna",
+			"vida nueva spa",
+			"nueva vida spa",
+			"the body shop",
+		},
+	},
+	{
+		CatTecnologia,
+		[]string{
+			"tecnología", "tecnologia", "tech", "gadget", "electrónica", "electronica",
+			"televisor", "celular", "smartphone", "iphone", "apple", "samsung",
+			"computadora", "laptop", "tablet", "audio", "gamer", "gaming",
+			"software", "hardware", "servicio técnico", "servicio tecnico",
+			"reparación", "reparacion", "app", "banca digital", "internet",
+			"movistar", "claro", "tigo", "telefonía", "telefonia", "factura movistar",
+			"cargo automático", "cargo automatico",
+
+			// Comercios detectados en el JSON
+			"valdez",
+			"valdez, s.a. de c.v.",
+			"app cuscatlan",
+			"banca digital",
+			"doffice", // si Doffice vende equipo/oficina; si es mobiliario, mover a Hogar
+		},
+	},
+	{
+		CatSuperMercados,
+		[]string{
+			"supermercado", "super", "market", "supermarket", "mercado",
+			"despensa", "abarrotes", "grocery", "groceries", "pricesmart",
+			"price smart", "walmart", "selectos", "super selectos", "costco",
+			"sams", "sam's", "gasolinera", "combustible", "fuel", "gasolina",
+			"club de precios", "mayoreo", "canasta básica", "canasta basica",
+			"fresh kitchen",
+		},
+	},
+	{
+		CatHogar,
+		[]string{
+			"hogar", "home", "mueble", "muebles", "furniture", "oficina",
+			"espacio", "renueva tu espacio", "silla", "escritorio", "mobiliario",
+			"electrodoméstico", "electrodomestico", "línea blanca", "linea blanca",
+			"construcción", "construccion", "ferretería", "ferreteria", "pintura",
+			"decoración", "decoracion", "colchón", "colchon", "cama", "remodelación",
+			"remodelacion", "jardín", "jardin", "herramientas", "muy mucho",
+
+			// Comercios detectados en el JSON
+			"doffice",
+			"d office",
+		},
+	},
+	{
+		CatCompras,
+		[]string{
+			"ropa", "clothing", "calzado", "zapato", "zapatos", "shoe", "shoes",
+			"moda", "fashion", "estilo", "look casual", "tienda", "tiendas", "store",
+			"boutique", "accesorios", "joyería", "joyeria", "jewelry",
+			"anillos", "regalo", "regalos", "mall", "centro comercial",
+			"librería", "libreria", "libros", "bookstore", "lectura",
+			"papelería", "papeleria", "útiles escolares", "utiles escolares",
+			"colegiatura", "colegiaturas", "anualidad", "escuela", "colegio",
+			"liceo", "educación", "educacion", "deportivo", "soccer",
+			"mumuso", "bubbas",
+
+			// Comercios detectados en el JSON
+			"anais",
+			"anaís",
+			"flexi",
+			"tiendas flexi",
+			"skechers",
+			"u.s. polo",
+			"us polo",
+			"u.s. polo assn",
+			"us polo assn",
+			"montsé",
+			"montse",
+			"qapla",
+			"joyería qapla",
+			"joyeria qapla",
+			"la ceiba",
+			"libros la ceiba",
+			"escuela alemana",
+			"liceo francés",
+			"liceo frances",
+			"colegiaturas",
+		},
+	},
+}
