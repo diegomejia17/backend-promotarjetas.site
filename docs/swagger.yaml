@@ -76,6 +76,36 @@ paths:
       summary: Obtener promociones unificadas
       tags:
       - promotions
+  /api/promotions/category/{category}:
+    get:
+      description: Obtiene la lista de promociones de tarjetas de crédito/débito
+        filtradas por la categoría especificada.
+      parameters:
+      - description: Nombre de la categoría (ej. Restaurantes, Compras, Tecnología)
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PromocionUnificada'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Obtener promociones filtradas por categoría
+      tags:
+      - promotions
   /api/promotions/sync:
     get:
       description: Fuerza la sincronización inmediata de promociones desde las APIs

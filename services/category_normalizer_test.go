@@ -53,6 +53,78 @@ func TestGetUnifiedCategory(t *testing.T) {
 			},
 			expected: "Otros",
 		},
+		{
+			name: "Generic BAC merchant with PriceSmart title",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "BAC",
+				Titulo:           "Compra hoy en PriceSmart y paga en cuotas",
+				DescripcionBreve: "Descuento en tu compra",
+			},
+			expected: "Supermercados",
+		},
+		{
+			name: "Generic Agricola merchant with Súper Selectos description",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Actualiza tus datos",
+				Titulo:           "Actualiza tus datos",
+				DescripcionBreve: "Gana certificado de regalo de Súper Selectos",
+			},
+			expected: "Supermercados",
+		},
+		{
+			name: "Generic Cuscatlan merchant with Copa Airlines title",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Banco CUSCATLAN",
+				Titulo:           "Copa Airlines",
+				DescripcionBreve: "Convierte tus MultiPuntos a ConnectMiles",
+			},
+			expected: "Viajes",
+		},
+		{
+			name: "Merchant Sazón de Mar",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Sazón de mar",
+				Titulo:           "Sazón de Mar en restaurante",
+				DescripcionBreve: "30% de descuento",
+			},
+			expected: "Restaurantes",
+		},
+		{
+			name: "Merchant Tartaleta",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Tartaleta",
+				Titulo:           "Pastel perfecto en Tartaleta",
+				DescripcionBreve: "10% de descuento en pasteles",
+			},
+			expected: "Restaurantes",
+		},
+		{
+			name: "Merchant Naturalizer",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Naturalizer",
+				Titulo:           "Beneficio especial",
+				DescripcionBreve: "Descuento en calzado y closet",
+			},
+			expected: "Compras",
+		},
+		{
+			name: "Merchant NAWI Beach House",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "NAWI Beach House",
+				Titulo:           "Tu escapada lista",
+				DescripcionBreve: "Regular Day Pass en la playa",
+			},
+			expected: "Viajes",
+		},
+		{
+			name: "Merchant Rincón Argentino",
+			promo: models.PromocionUnificada{
+				NombreComercio:   "Rincón Argentino",
+				Titulo:           "25% OFF",
+				DescripcionBreve: "Descuento al instante",
+			},
+			expected: "Restaurantes",
+		},
 	}
 
 	for _, tt := range tests {

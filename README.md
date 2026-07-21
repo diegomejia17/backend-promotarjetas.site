@@ -54,6 +54,7 @@ El backend estará disponible en `http://localhost:3000`.
 | Método | Ruta | Descripción |
 | :--- | :--- | :--- |
 | `GET` | `/api/promotions` | Listado completo de promociones unificadas |
+| `GET` | `/api/promotions/category/:category` | Listado de promociones filtradas por el nombre de la categoría |
 | `GET` | `/api/promotions/sync` | Forzar sincronización manual de datos |
 
 ## 🏗️ Arquitectura del Proyecto

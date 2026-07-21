@@ -55,6 +55,11 @@ var merchantCategoryOverrides = map[string]UnifiedCategory{
 	"tony roma's":          CatRestaurantes,
 	"wings":                CatRestaurantes,
 	"pedidosya":            CatRestaurantes,
+	"rincón argentino":     CatRestaurantes,
+	"rincon argentino":     CatRestaurantes,
+	"sazón de mar":         CatRestaurantes,
+	"sazon de mar":         CatRestaurantes,
+	"tartaleta":            CatRestaurantes,
 
 	// Compras
 	"adidas":              CatCompras,
@@ -97,6 +102,7 @@ var merchantCategoryOverrides = map[string]UnifiedCategory{
 	"u.s. polo assn.": CatCompras,
 	"us polo":         CatCompras,
 	"us polo assn":    CatCompras,
+	"naturalizer":     CatCompras,
 
 	// Salud
 	"bitter":                           CatSalud,
@@ -153,6 +159,8 @@ var merchantCategoryOverrides = map[string]UnifiedCategory{
 	"siberian el salvador": CatViajes,
 	"transexpress":         CatViajes,
 	"trans express":        CatViajes,
+	"nawi beach house":     CatViajes,
+	"nawi":                 CatViajes,
 
 	// Entretenimiento
 	"barlleno app": CatEntretenimiento,
@@ -185,11 +193,6 @@ var merchantCategoryOverrides = map[string]UnifiedCategory{
 	"phenicia":                CatHogar,
 	"rootka gardening design": CatHogar,
 	"muy mucho":               CatHogar,
-
-	// Genéricos / bancos: mejor NO forzar categoría fija
-	"bac":                 CatOtros,
-	"banco cuscatlan":     CatOtros,
-	"actualiza tus datos": CatOtros,
 }
 
 var mappings = []categoryMapping{
@@ -220,6 +223,19 @@ var mappings = []categoryMapping{
 			"la rosa",
 			"café del cielo",
 			"cafe del cielo",
+			"rincón argentino",
+			"rincon argentino",
+			"sazón de mar",
+			"sazon de mar",
+			"sazón",
+			"sazon",
+			"tartaleta",
+			"pastel",
+			"pasteles",
+			"pastelería",
+			"pasteleria",
+			"asado",
+			"carnes",
 		},
 	},
 	{
@@ -230,7 +246,7 @@ var mappings = []categoryMapping{
 			"copa airlines", "copa", "connectmiles", "lifemiles", "millas",
 			"boletos aéreos", "boletos aereos", "pasaje", "viaje", "travel",
 			"turismo", "tour", "playa", "crucero", "aeropuerto", "airport",
-			"vip", "day pass", "entrada vip", "sala vip",
+			"vip", "day pass", "entrada vip", "sala vip", "mileageplus", "beach house", "nawi",
 
 			// Comercios detectados en el JSON
 			"allá arriba",
@@ -257,6 +273,7 @@ var mappings = []categoryMapping{
 			"cinemark",
 			"vive el cine",
 			"entradas al 2x1",
+			"cineplus",
 		},
 	},
 	{
@@ -313,7 +330,7 @@ var mappings = []categoryMapping{
 		[]string{
 			"supermercado", "super", "market", "supermarket", "mercado",
 			"despensa", "abarrotes", "grocery", "groceries", "pricesmart",
-			"price smart", "walmart", "selectos", "super selectos", "costco",
+			"price smart", "walmart", "selectos", "super selectos", "súper selectos", "costco",
 			"sams", "sam's", "gasolinera", "combustible", "fuel", "gasolina",
 			"club de precios", "mayoreo", "canasta básica", "canasta basica",
 			"fresh kitchen",
@@ -368,6 +385,9 @@ var mappings = []categoryMapping{
 			"liceo francés",
 			"liceo frances",
 			"colegiaturas",
+			"naturalizer",
+			"closet",
+			"certificado de regalo",
 		},
 	},
 }

@@ -39,6 +39,35 @@ func GetPromotions(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
+// GetPromotionsByCategory godoc
+// @Summary      Obtener promociones filtradas por categoría
+// @Description  Obtiene la lista de promociones de tarjetas de crédito/débito filtradas por la categoría especificada.
+// @Tags         promotions
+// @Produce      json
+// @Param        category   path      string  true  "Nombre de la categoría (ej. Restaurantes, Compras, Tecnología)"
+// @Success      200        {array}   models.PromocionUnificada
+// @Failure      400        {object}  models.ErrorResponse
+// @Failure      500        {object}  models.ErrorResponse
+// @Router       /api/promotions/category/{category} [get]
+func GetPromotionsByCategory(cfg config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		category := c.Param("category")
+		if category == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "El parámetro de categoría es requerido"})
+			return
+		}
+
+		ctx := c.Request.Context()
+		filteredPromotions, err := services.GetPromotionsByCategory(ctx, cfg, category)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error interno al obtener promociones por categoría"})
+			return
+		}
+
+		c.JSON(http.StatusOK, filteredPromotions)
+	}
+}
+
 // ForceSyncPromotions godoc
 // @Summary      Forzar sincronización de promociones
 // @Description  Fuerza la sincronización inmediata de promociones desde las APIs externas de los bancos.

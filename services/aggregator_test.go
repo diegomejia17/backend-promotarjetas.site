@@ -10,6 +10,7 @@ import (
 	"promotarjetas-backend/cache"
 	"promotarjetas-backend/config"
 	"promotarjetas-backend/integrations"
+	"promotarjetas-backend/models"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -97,5 +98,55 @@ func TestSyncPromotionsConcurrent(t *testing.T) {
 	}
 	if len(list) != 3 {
 		t.Fatalf("expected 3 promotions aggregated, got %d", len(list))
+	}
+}
+
+func TestFilterPromotionsByCategory(t *testing.T) {
+	promotions := []models.PromocionUnificada{
+		{ID: "1", Titulo: "Pizza Gratis", Categoria: "Restaurantes"},
+		{ID: "2", Titulo: "Laptop Descuento", Categoria: "Tecnología"},
+		{ID: "3", Titulo: "Hamburguesa 2x1", Categoria: "Restaurantes"},
+		{ID: "4", Titulo: "Super Oferta", Categoria: "Supermercados"},
+	}
+
+	tests := []struct {
+		name          string
+		category      string
+		expectedCount int
+	}{
+		{
+			name:          "Exact match case-sensitive",
+			category:      "Restaurantes",
+			expectedCount: 2,
+		},
+		{
+			name:          "Case-insensitive match",
+			category:      "restaurantes",
+			expectedCount: 2,
+		},
+		{
+			name:          "Accent-insensitive match",
+			category:      "tecnologia",
+			expectedCount: 1,
+		},
+		{
+			name:          "Category with accent match",
+			category:      "Tecnología",
+			expectedCount: 1,
+		},
+		{
+			name:          "No matching category",
+			category:      "Viajes",
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FilterPromotionsByCategory(promotions, tt.category)
+			if len(got) != tt.expectedCount {
+				t.Errorf("FilterPromotionsByCategory(%q) count = %d; want %d", tt.category, len(got), tt.expectedCount)
+			}
+		})
 	}
 }

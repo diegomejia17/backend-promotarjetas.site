@@ -58,6 +58,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.GET("/promotions", controllers.GetPromotions(cfg))
+		api.GET("/promotions/category/:category", controllers.GetPromotionsByCategory(cfg))
 		api.GET("/promotions/sync", controllers.ForceSyncPromotions(cfg))
 	}
 

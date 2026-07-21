@@ -95,3 +95,41 @@ func TestCleanText(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeCategory(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "Lowercase and trim spaces",
+			input:    "  Restaurantes  ",
+			expected: "restaurantes",
+		},
+		{
+			name:     "Remove accents",
+			input:    "Tecnología",
+			expected: "tecnologia",
+		},
+		{
+			name:     "Uppercase with accents",
+			input:    "TECNOLOGÍA",
+			expected: "tecnologia",
+		},
+		{
+			name:     "Empty input",
+			input:    "",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NormalizeCategory(tt.input)
+			if got != tt.expected {
+				t.Errorf("NormalizeCategory(%q) = %q; want %q", tt.input, got, tt.expected)
+			}
+		})
+	}
+}

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sort"
 	"sync"
@@ -11,6 +12,7 @@ import (
 	"promotarjetas-backend/config"
 	"promotarjetas-backend/integrations"
 	"promotarjetas-backend/models"
+	"promotarjetas-backend/utils"
 )
 
 var (
@@ -131,4 +133,34 @@ func SyncPromotions(ctx context.Context, cfg config.Config) {
 			log.Println("Promociones actualizadas en Redis exitosamente")
 		}
 	}
+}
+
+// GetPromotionsByCategory obtiene promociones filtradas por el nombre de categoría desde la caché o forzando sincronización si hay cache miss.
+func GetPromotionsByCategory(ctx context.Context, cfg config.Config, category string) ([]models.PromocionUnificada, error) {
+	promotions, err := cache.GetPromotionsList(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("obtener promociones de cache: %w", err)
+	}
+
+	if promotions == nil { // Cache miss
+		SyncPromotions(ctx, cfg)
+		promotions, err = cache.GetPromotionsList(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("obtener promociones de cache tras sincronizacion: %w", err)
+		}
+	}
+
+	return FilterPromotionsByCategory(promotions, category), nil
+}
+
+// FilterPromotionsByCategory filtra una lista de promociones por nombre de categoría de forma insensible a mayúsculas y acentos.
+func FilterPromotionsByCategory(promotions []models.PromocionUnificada, category string) []models.PromocionUnificada {
+	target := utils.NormalizeCategory(category)
+	filtered := make([]models.PromocionUnificada, 0)
+	for _, p := range promotions {
+		if utils.NormalizeCategory(p.Categoria) == target {
+			filtered = append(filtered, p)
+		}
+	}
+	return filtered
 }

@@ -24,3 +24,17 @@ func CleanText(s string) string {
 	s = strings.Trim(s, "* ")
 	return s
 }
+
+// NormalizeCategory normalizes category names for case-insensitive and accent-insensitive matching.
+func NormalizeCategory(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	r := strings.NewReplacer(
+		"á", "a",
+		"é", "e",
+		"í", "i",
+		"ó", "o",
+		"ú", "u",
+		"ü", "u",
+	)
+	return r.Replace(s)
+}

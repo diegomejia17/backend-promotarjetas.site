@@ -47,6 +47,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/promotions/category/{category}": {
+            "get": {
+                "description": "Obtiene la lista de promociones de tarjetas de crédito/débito filtradas por la categoría especificada.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promotions"
+                ],
+                "summary": "Obtener promociones filtradas por categoría",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nombre de la categoría (ej. Restaurantes, Compras, Tecnología)",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.PromocionUnificada"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/promotions/sync": {
             "get": {
                 "description": "Fuerza la sincronización inmediata de promociones desde las APIs externas de los bancos.",
