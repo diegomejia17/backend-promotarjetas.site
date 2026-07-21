@@ -31,7 +31,7 @@ func init() {
 
 func GetUnifiedCategory(p *models.PromocionUnificada) string {
 	comercioLower := strings.ToLower(strings.TrimSpace(p.NombreComercio))
-	
+
 	// Fast path: Exact match from our overrides map
 	if cat, ok := merchantCategoryOverrides[comercioLower]; ok {
 		return string(cat)

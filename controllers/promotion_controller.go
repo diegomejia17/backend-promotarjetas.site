@@ -12,15 +12,16 @@ import (
 
 func GetPromotions(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		rawPromotions, err := cache.GetPromotionsRaw()
+		ctx := c.Request.Context()
+		rawPromotions, err := cache.GetPromotionsRaw(ctx)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error interno resolviendo el caché"})
 			return
 		}
 
 		if rawPromotions == nil { // Cache miss
-			services.SyncPromotions(cfg)
-			rawPromotions, _ = cache.GetPromotionsRaw()
+			services.SyncPromotions(ctx, cfg)
+			rawPromotions, _ = cache.GetPromotionsRaw(ctx)
 		}
 
 		// Enviar directamente los bytes pre-procesados como application/json
@@ -31,7 +32,7 @@ func GetPromotions(cfg config.Config) gin.HandlerFunc {
 
 func ForceSyncPromotions(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		services.SyncPromotions(cfg)
+		services.SyncPromotions(c.Request.Context(), cfg)
 		c.JSON(http.StatusOK, gin.H{"message": "Sincronizacion ejecutada exitosamente"})
 	}
 }
