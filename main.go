@@ -2,18 +2,29 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"promotarjetas-backend/cache"
 	"promotarjetas-backend/config"
 	"promotarjetas-backend/controllers"
+	_ "promotarjetas-backend/docs"
 	"promotarjetas-backend/services"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title           PromoTarjetas Backend API
+// @version         1.0
+// @description     API para consultar y sincronizar promociones bancarias unificadas.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Soporte PromoTarjetas
+
+// @host      localhost:3000
+// @BasePath  /
 func main() {
 	cfg := config.LoadConfig()
 
@@ -38,9 +49,10 @@ func main() {
 	corsConfig.AllowAllOrigins = true // Cambiar a false y usar AllowOrigins en producción real
 	r.Use(cors.New(corsConfig))
 
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
+	r.GET("/health", controllers.HealthCheck)
+
+	// Endpoint para Swagger UI
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := r.Group("/api")
 	{

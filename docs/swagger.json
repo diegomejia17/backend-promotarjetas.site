@@ -1,0 +1,158 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para consultar y sincronizar promociones bancarias unificadas.",
+        "title": "PromoTarjetas Backend API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Soporte PromoTarjetas"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "paths": {
+        "/api/promotions": {
+            "get": {
+                "description": "Obtiene la lista completa de promociones de tarjetas de crédito/débito unificadas y almacenadas en caché.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promotions"
+                ],
+                "summary": "Obtener promociones unificadas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.PromocionUnificada"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/promotions/sync": {
+            "get": {
+                "description": "Fuerza la sincronización inmediata de promociones desde las APIs externas de los bancos.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promotions"
+                ],
+                "summary": "Forzar sincronización de promociones",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Verifica el estado de salud del servidor backend.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Estado del servicio",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.HealthResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Error interno resolviendo el caché"
+                }
+            }
+        },
+        "models.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "models.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Sincronizacion ejecutada exitosamente"
+                }
+            }
+        },
+        "models.PromocionUnificada": {
+            "type": "object",
+            "properties": {
+                "bancoOrigen": {
+                    "type": "string"
+                },
+                "categoria": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "descripcionBreve": {
+                    "type": "string"
+                },
+                "fechaFin": {
+                    "type": "string"
+                },
+                "fechaInicio": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "nombreComercio": {
+                    "type": "string"
+                },
+                "porcentajeDescuento": {
+                    "type": "number"
+                },
+                "restriccionesHtml": {
+                    "type": "string"
+                },
+                "titulo": {
+                    "type": "string"
+                },
+                "urlExterna": {
+                    "type": "string"
+                },
+                "urlImagen": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

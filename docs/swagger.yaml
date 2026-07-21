@@ -1,0 +1,106 @@
+basePath: /
+definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        example: Error interno resolviendo el caché
+        type: string
+    type: object
+  models.HealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  models.MessageResponse:
+    properties:
+      message:
+        example: Sincronizacion ejecutada exitosamente
+        type: string
+    type: object
+  models.PromocionUnificada:
+    properties:
+      bancoOrigen:
+        type: string
+      categoria:
+        type: string
+      createdAt:
+        type: integer
+      descripcionBreve:
+        type: string
+      fechaFin:
+        type: string
+      fechaInicio:
+        type: string
+      id:
+        type: string
+      nombreComercio:
+        type: string
+      porcentajeDescuento:
+        type: number
+      restriccionesHtml:
+        type: string
+      titulo:
+        type: string
+      urlExterna:
+        type: string
+      urlImagen:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    name: Soporte PromoTarjetas
+  description: API para consultar y sincronizar promociones bancarias unificadas.
+  termsOfService: http://swagger.io/terms/
+  title: PromoTarjetas Backend API
+  version: "1.0"
+paths:
+  /api/promotions:
+    get:
+      description: Obtiene la lista completa de promociones de tarjetas de crédito/débito
+        unificadas y almacenadas en caché.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PromocionUnificada'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Obtener promociones unificadas
+      tags:
+      - promotions
+  /api/promotions/sync:
+    get:
+      description: Fuerza la sincronización inmediata de promociones desde las APIs
+        externas de los bancos.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageResponse'
+      summary: Forzar sincronización de promociones
+      tags:
+      - promotions
+  /health:
+    get:
+      description: Verifica el estado de salud del servidor backend.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+      summary: Estado del servicio
+      tags:
+      - health
+swagger: "2.0"
