@@ -9,7 +9,7 @@ BFF (Backend for Frontend) robusto desarrollado en Go que agrega, limpia y categ
 ## 🚀 Funcionalidades Principales
 
 - **Agregación Multi-Banco**: Fetch concurrente de promociones utilizando goroutines.
-- **Categorización Unificada**: Clasificación automática en 8 categorías fijas (Restaurantes, Supermercados, Viajes, Compras, Salud, Tecnología, Hogar, Entretenimiento).
+- **Categorización Híbrida (Reglas + IA TypeSafe Jev)**: Clasificación determinista con overrides de comercios y regex, combinada con inteligencia semántica mediante el modelo System One [Jev de TypeSafe AI](https://docs.typesafe.ai/introduction) para resolver automáticamente comercios y promociones complejas o no catalogadas.
 - **Limpieza y Enriquecimiento**: Remoción de asteriscos (`*`), limpieza de HTML y fetch de detalles enriquecidos (h1_title, text_on_modal).
 - **Caché en Redis**: Almacenamiento eficiente para asegurar tiempos de respuesta mínimos en el frontend.
 - **Sincronización Inteligente**: Cron interno para actualización diaria a medianoche y soporte para sincronización forzada vía API.
@@ -39,8 +39,21 @@ BFF (Backend for Frontend) robusto desarrollado en Go que agrega, limpia y categ
 2.  Configura las variables de entorno:
     ```bash
     cp .env.example .env
-    # Edita el .env con tu API Key de Cuscatlán
+    # Edita el .env con las configuraciones necesarias
     ```
+
+    | Variable | Requerida | Valor por defecto | Descripción |
+    | :--- | :--- | :--- | :--- |
+    | `PORT` | No | `3000` | Puerto del servidor HTTP |
+    | `REDIS_URL` | No | `localhost:6379` | Host y puerto de Redis |
+    | `REDIS_PASSWORD` | No | *(vacío)* | Contraseña de Redis |
+    | `CUSCATLAN_API_KEY` | Sí | - | API Key para promociones de Banco Cuscatlán |
+    | `AGRICOLA_URL` | No | *(URL por defecto)* | Endpoint de promociones de Banco Agrícola |
+    | `AGRICOLA_COOKIE` | No | *(vacío)* | Cookie de sesión para Banco Agrícola |
+    | `TYPESAFE_API_KEY` | No | *(vacío)* | API Key de [TypeSafe AI](https://console.typesafe.ai/keys) para clasificación con Jev |
+    | `TYPESAFE_MODEL` | No | `jev-latest` | Modelo de evaluación System One a utilizar |
+    | `TYPESAFE_BASE_URL` | No | `https://api.typesafe.ai/v1/systemone` | Endpoint de TypeSafe AI |
+    | `TYPESAFE_CLASSIFY_ALL` | No | `false` | Si es `true`, evalúa con Jev todas las promociones sin override (por defecto solo evalúa las no resueltas/"Otros") |
 
 3.  Levanta el proyecto con Docker:
     ```bash

@@ -57,7 +57,7 @@ func SyncPromotions(ctx context.Context, cfg config.Config) {
 
 	go func() {
 		defer wg.Done()
-		data, err := integrations.FetchAgricola(ctx)
+		data, err := integrations.FetchAgricola(ctx, cfg.AgricolaURL, cfg.AgricolaCookie)
 		if err != nil {
 			log.Printf("Error fetching Agricola: %v\n", err)
 			return
@@ -110,7 +110,11 @@ func SyncPromotions(ctx context.Context, cfg config.Config) {
 	}
 
 	// 1. Unificar categorías
-	allPromotions = UnifyCategories(allPromotions)
+	var classifier CategoryClassifier
+	if cfg.TypeSafeAPIKey != "" {
+		classifier = integrations.NewTypeSafeClient(cfg.TypeSafeAPIKey, cfg.TypeSafeBaseURL, cfg.TypeSafeModel, 10*time.Second)
+	}
+	allPromotions = UnifyCategoriesWithClassifier(ctx, allPromotions, classifier, cfg.TypeSafeClassifyAll)
 
 	// 2. Ordenar de forma global: las más recientes primero
 	sort.Slice(allPromotions, func(i, j int) bool {
